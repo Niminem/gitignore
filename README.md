@@ -6,7 +6,7 @@ A dependency-free, spec-compliant `.gitignore` parser and pattern matcher for Ni
 
 ## Installation
 
-When available on Nimble:
+When available on Nimble (see [status](https://github.com/nim-lang/packages/pull/3417)):
 ```
 nimble install gitignore
 ```
