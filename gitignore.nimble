@@ -6,7 +6,7 @@ license       = "MIT"
 srcDir        = "src"
 
 # Dependencies
-requires "nim >= 2.2.10"
+requires "nim >= 2.2.4"
 
 # Tasks
 task differential, "Run the Tier-2 differential harness against the system git":

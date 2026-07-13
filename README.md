@@ -1,17 +1,8 @@
 # gitignore
 
-A dependency-free, spec-compliant `.gitignore` parser and pattern matcher for
-Nim (std lib only, `nim >= 2.2.10`).
+A dependency-free, spec-compliant `.gitignore` parser and pattern matcher for Nim (std lib only)
 
-"Spec-compliant" means: behavior identical to git itself. Where the
-[official documentation](https://git-scm.com/docs/gitignore) is ambiguous or
-silent, this library matches git's actual implementation (`wildmatch.c` and
-`dir.c`), as validated by ported git test tables, a differential test harness,
-and a randomized fuzzer — all running real queries against a real
-`git check-ignore` and demanding byte-identical answers.
-
-**Validated against git 2.37.1.windows.1** (Windows/NTFS,
-`core.autocrlf=false`, `core.ignorecase=false`).
+"Spec-compliant" means: behavior identical to git itself. Where the [official documentation](https://git-scm.com/docs/gitignore) is ambiguous or silent, this library matches git's actual implementation (`wildmatch.c` and `dir.c`), as validated by ported git test tables, a differential test harness, and a randomized fuzzer — all running real queries against a real `git check-ignore` and demanding byte-identical answers.
 
 ## The three layers
 
@@ -25,7 +16,9 @@ import gitignore            # everything
 import gitignore/ignorefile # layers 1 + 2 only, if you want to avoid the I/O module
 ```
 
-### Layer 1 — one pattern (`gitignore/pattern`, `gitignore/wildmatch`)
+
+
+### Layer 1 — one pattern (`gitignore/pattern`)
 
 Parse a single gitignore line and match paths against it.
 
@@ -102,40 +95,44 @@ parameter on the stack and a per-call parameter in the pure layers.
 
 ## Semantics and policy
 
-- **`--no-index` semantics.** git never ignores tracked files; this library
-  does not read the index, so it behaves exactly like
-  `git check-ignore --no-index`. Every claim of git-identical behavior is
-  against that mode.
+- `--no-index` **semantics.** git never ignores tracked files; this library
+does not read the index, so it behaves exactly like
+`git check-ignore --no-index`. Every claim of git-identical behavior is
+against that mode.
 - **The excludes file is opt-in.** `.git/info/exclude` is read automatically —
-  it is repo-local state. But the library neither parses gitconfig nor shells
-  out to git, so it cannot resolve `core.excludesFile`, and a library must not
-  silently read a global user file. Callers who want git's default behavior
-  resolve it themselves (`core.excludesFile`, falling back to
-  `$XDG_CONFIG_HOME/git/ignore`, i.e. `~/.config/git/ignore`) and pass the
-  path to `newIgnoreStack(root, excludesFile = ...)`.
+it is repo-local state. But the library neither parses gitconfig nor shells
+out to git, so it cannot resolve `core.excludesFile`, and a library must not
+silently read a global user file. Callers who want git's default behavior
+resolve it themselves (`core.excludesFile`, falling back to
+`$XDG_CONFIG_HOME/git/ignore`, i.e. `~/.config/git/ignore`) and pass the
+path to `newIgnoreStack(root, excludesFile = ...)`.
 - **Symlinks** get git's lstat view: a symlink is a file even when it points
-  at a directory, and is never followed.
+at a directory, and is never followed.
 - **Case folding** is ASCII-only, like git's own `WM_CASEFOLD`.
+
+
 
 ## Deliberate deviations from git
 
 Exactly one, and it is unobservable through this API: git keeps patterns that
-can never match anything — a bare `!`, `/`, or `//` line — as inert entries in
-its pattern list, while `parsePattern` returns `none` for them. (A bare `!`
-in git can only ever match an empty basename, which requires handing
-check-ignore a path with a trailing slash; this API never produces empty
-basenames.) Behavior is identical for all valid inputs.
+can never match anything — a bare `!` line, or a `/` or `//` line optionally
+preceded by `!` — as inert entries in its pattern list, while `parsePattern`
+returns `none` for them. (A bare `!` in git can only ever match an empty
+basename, which requires handing check-ignore a path with a trailing slash;
+this API never produces empty basenames.) Behavior is identical for all valid
+inputs.
 
 ## Verification
 
-Everything runs locally via nimble tasks; the pinned oracle is
-**git 2.37.1.windows.1**.
+Everything runs locally via nimble tasks.
 
-| task | what it does | needs git? |
-| --- | --- | --- |
-| `nimble test` | hermetic unit suites: the ported `t3070-wildmatch` table, line-parser tests, `t0008-ignores` scenarios, repo-stack tests | no |
-| `nimble differential` | Tier-2 oracle: hand-written corpus (41 cases / 233 queries) run through a real `git check-ignore -v --non-matching --no-index` in a temp repo, comparing the verdict and all three `-v` columns | yes |
-| `nimble fuzz` | Tier-3 fuzzer (optional, long-running): random ignore files and paths through the same oracle. Seed is logged every run; reproduce with `nimble fuzz <iterations> <seed>` (also `--only:<case>`, or `FUZZ_ITERATIONS`/`FUZZ_SEED` env vars) | yes |
+
+| task                  | what it does                                                                                                                                                                                                                                | needs git? |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| `nimble test`         | hermetic unit suites: the ported `t3070-wildmatch` table, line-parser tests, `t0008-ignores` scenarios, repo-stack tests                                                                                                                    | no         |
+| `nimble differential` | Tier-2 oracle: hand-written corpus (41 cases / 233 queries) run through a real `git check-ignore -v --non-matching --no-index` in a temp repo, comparing the verdict and all three `-v` columns                                             | yes        |
+| `nimble fuzz`         | Tier-3 fuzzer (optional, long-running): random ignore files and paths through the same oracle. Seed is logged every run; reproduce with `nimble fuzz <iterations> <seed>` (also `--only:<case>`, or `FUZZ_ITERATIONS`/`FUZZ_SEED` env vars) | yes        |
+
 
 `nimble fuzz` defaults to 500 random cases (roughly 11,000 queries). Every
 divergence it has ever found was resolved in git's favor, with a regression

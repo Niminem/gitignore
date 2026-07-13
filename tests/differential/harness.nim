@@ -292,3 +292,5 @@ when isMainModule:
     quit(1)
   echo "OK: ", queries, " queries in ", corpusCases.len,
        " cases, zero divergences (", gitVersion.strip, ")"
+  echo "\n" # for some reason this is needed otherwise there is truncation of the output
+            # not sure why yet.
