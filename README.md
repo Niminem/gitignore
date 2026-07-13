@@ -1,8 +1,20 @@
 # gitignore
 
-A dependency-free, spec-compliant `.gitignore` parser and pattern matcher for Nim (std lib only)
+A dependency-free, spec-compliant `.gitignore` parser and pattern matcher for Nim (std lib only).
 
 "Spec-compliant" means: behavior identical to git itself. Where the [official documentation](https://git-scm.com/docs/gitignore) is ambiguous or silent, this library matches git's actual implementation (`wildmatch.c` and `dir.c`), as validated by ported git test tables, a differential test harness, and a randomized fuzzer — all running real queries against a real `git check-ignore` and demanding byte-identical answers.
+
+## Installation
+
+When available on Nimble:
+```
+nimble install gitignore
+```
+
+Otherwise clone via git:
+```
+git clone https://github.com/Niminem/gitignore
+```
 
 ## The three layers
 
