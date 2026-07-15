@@ -6,12 +6,14 @@ A dependency-free, spec-compliant `.gitignore` parser and pattern matcher for Ni
 
 ## Installation
 
-When available on Nimble (see [status](https://github.com/nim-lang/packages/pull/3418)):
+Install via nimble:
+
 ```
 nimble install gitignore
 ```
 
-Otherwise clone via git:
+or clone via git:
+
 ```
 git clone https://github.com/Niminem/gitignore
 ```

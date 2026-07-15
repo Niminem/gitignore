@@ -1,2 +1,5 @@
 .DS_Store
 *.exe
+nimble.develop
+nimble.paths
+nimbledeps
